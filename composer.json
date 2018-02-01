@@ -1,0 +1,32 @@
+{
+  "name": "fdevs/fixture",
+  "type": "library",
+  "description": "FDevs Fixture Component",
+  "keywords": [],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Konstantin Vytyagov",
+      "email": "vytyagov.k@gmail.com"
+    },
+    {
+      "name": "4devs Community",
+      "homepage": "https://github.com/4devs/fixture/contributors"
+    }
+  ],
+  "require": {
+    "php": "^7.1"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^2.10"
+  },
+  "config":{
+    "bin-dir": "bin",
+    "sort-packages": true
+  },
+  "autoload": {
+    "psr-4": {
+      "FDevs\\Fixture\\": ""
+    }
+  }
+}
