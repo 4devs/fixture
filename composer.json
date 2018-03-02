@@ -15,17 +15,18 @@
     }
   ],
   "require": {
-    "php": "^7.1"
+    "php": "^7.1",
+    "fdevs/executor": "dev-master"
   },
   "require-dev": {
-    "fdevs/executor": "dev-master",
     "friendsofphp/php-cs-fixer": "^2.10",
     "symfony/console": "^3.4 | ^4.0",
+    "symfony/dependency-injection": "^3.4 | ^4.0",
     "symfony/event-dispatcher": "^3.4 | ^4.0"
   },
   "suggest": {
-    "fdevs/executor": "Using FDevs\\Executor\\ExecutorInterface in FDevs\\Fixture\\Command\\LoadCommand",
     "symfony/console": "Allow to use console FDevs\\Fixture\\Command\\LoadCommand",
+    "symfony/dependency-injection": "Allow to use package implementations based on Symfony\\Component\\DependencyInjection\\ServiceLocator",
     "symfony/event-dispatcher": "Used for setting FDevs\\Fixture\\Command\\LoadCommand context on Symfony\\Component\\Console\\ConsoleEvents::COMMAND event"
   },
   "config":{
