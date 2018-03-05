@@ -12,7 +12,7 @@ class ChainFilterReduce implements FilterInterface
     /**
      * ChainFilter constructor.
      *
-     * @param iterable                     $filters
+     * @param iterable|SupportFilterInterface[]     $filters
      */
     public function __construct(iterable $filters = [])
     {
@@ -26,8 +26,9 @@ class ChainFilterReduce implements FilterInterface
     {
         $out = $items;
         foreach ($this->filters as $filter) {
-            if ($filter->support($out, $options)) {
-                $out = $filter->filter($out, $options);
+            $res = $this->handleFilter($filter, $items, $options);
+            if (null !== $res) {
+                $out = $res;
                 if (\iterator_count($out) < 1) {
                     break;
                 }
@@ -35,5 +36,21 @@ class ChainFilterReduce implements FilterInterface
         }
 
         yield from $out;
+    }
+
+    /**
+     * @param SupportFilterInterface $filter
+     * @param iterable               $items
+     * @param array                  $options
+     *
+     * @return \Iterator|null
+     */
+    private function handleFilter(SupportFilterInterface $filter, iterable $items, array $options): ?\Iterator
+    {
+        if (!$filter->support($items, $options)) {
+            return null;
+        }
+
+        return $filter->filter($items, $options);
     }
 }
