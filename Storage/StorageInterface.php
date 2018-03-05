@@ -13,7 +13,7 @@ interface StorageInterface
      *
      * @throws StoreException
      *
-     * @return string
+     * @return string   Key of stored item
      */
     public function store($data, string $type): string;
 
