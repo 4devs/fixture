@@ -28,7 +28,6 @@
     "symfony/http-kernel": "^3.4 | ^4.0"
   },
   "suggest": {
-    "friendsofphp/php-cs-fixer": "Code style correction while developing",
     "psr/cache": "Used in cache based storage implementation",
     "symfony/console": "Allow to use symfony console",
     "symfony/config": "For configure bundle",
