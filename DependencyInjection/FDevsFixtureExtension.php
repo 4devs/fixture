@@ -22,6 +22,7 @@ class FDevsFixtureExtension extends Extension
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('command.xml');
+        $loader->load('service.xml');
 
         $this
             ->prepareLoadCommandContextSubscriber($config, $container)
