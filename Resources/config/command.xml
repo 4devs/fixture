@@ -10,16 +10,15 @@
         </defaults>
 
         <service class="FDevs\Fixture\Command\LoadCommand">
-            <argument key="$executor" id="f_devs_fixture.executor"/>
+            <tag name="console.command" command="fdevs:fixture:load"/>
         </service>
 
-        <service id="f_devs_fixture.executor" class="FDevs\Executor\Executor">
-            <argument key="$iterator" id="f_devs_fixture.executor_iterator"/>
-        </service>
+        <service id="FDevs\Executor\ExecutorInterface" class="FDevs\Executor\Executor"/>
 
-        <service id="f_devs_fixture.executor_iterator"
-                 class="FDevs\Executor\DependentExecutableIterator">
-            <argument type="tagged" tag="f_devs_fixture.fixture"/>
+        <service id="FDevs\Executor\DependentExecutableIteratorInterface"
+                 alias="FDevs\Executor\DependentExecutableIterator"/>
+        <service id="FDevs\Executor\DependentExecutableIterator">
+            <argument/>
         </service>
 
     </services>
