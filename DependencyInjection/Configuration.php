@@ -31,13 +31,11 @@ class Configuration implements ConfigurationInterface
         $treeBuilder = new TreeBuilder();
         $node = $treeBuilder->root('load_command');
         $node
-            ->arrayPrototype()
-                ->children()
-                    ->scalarNode('context_handler')
-                        ->info('Service id of ContextHandlerInterface. ' .
-                            'If set, will be created LoadContextSubscriber injecting that service, to set ' .
-                            'LoadCommand context on execute. Otherwise context would be empty')
-                    ->end()
+            ->children()
+                ->scalarNode('context_handler')
+                    ->info('Service id of ContextHandlerInterface. ' .
+                        'If set, will be created LoadContextSubscriber injecting that service, to set ' .
+                        'LoadCommand context on execute. Otherwise context would be empty')
                 ->end()
             ->end()
         ;
