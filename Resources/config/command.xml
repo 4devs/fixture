@@ -9,7 +9,7 @@
             <bind key="$executor" id="f_devs_fixture.executor_iterator"/>
         </defaults>
 
-        <service class="FDevs\Fixture\Command\LoadCommand">
+        <service id="FDevs\Fixture\Command\LoadCommand">
             <tag name="console.command" command="fdevs:fixture:load"/>
         </service>
 

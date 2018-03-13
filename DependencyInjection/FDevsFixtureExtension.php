@@ -7,6 +7,7 @@ use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class FDevsFixtureExtension extends Extension
@@ -23,7 +24,7 @@ class FDevsFixtureExtension extends Extension
         $loader->load('command.xml');
 
         $this
-            ->prepareLoadCommandContextSubsciber($config, $container)
+            ->prepareLoadCommandContextSubscriber($config, $container)
         ;
     }
 
@@ -33,19 +34,14 @@ class FDevsFixtureExtension extends Extension
      *
      * @return FDevsFixtureExtension
      */
-    private function prepareLoadCommandContextSubsciber(array $config, ContainerBuilder $container): self
+    private function prepareLoadCommandContextSubscriber(array $config, ContainerBuilder $container): self
     {
         $configHandler = $config['load_command']['context_handler'] ?? null;
 
-        if (
-            null !== $configHandler
-            && $container->hasDefinition($configHandler)
-        ) {
-            $handlerDef = $container->getDefinition($configHandler);
-
-            $def = new Definition(LoadContextSubscriber::class);
+        if (null !== $configHandler) {
+            $handlerRef = new Reference($configHandler);
+            $def = new Definition(LoadContextSubscriber::class, [$handlerRef]);
             $def
-                ->replaceArgument('$contextHandler', $handlerDef)
                 ->addTag('kernel.event_subscriber')
             ;
 
