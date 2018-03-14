@@ -5,6 +5,7 @@ namespace FDevs\Fixture\Storage\FilterStorage;
 use FDevs\Fixture\Exception\Storage\NotFoundException;
 use FDevs\Fixture\Exception\Storage\StoreItemException;
 use FDevs\Fixture\Storage\StorageInterface;
+use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
@@ -60,11 +61,12 @@ class Storage implements StorageInterface
     {
         $typeKeys = $this->getTypeKeys($type);
         $items = $this->getCachePool()->getItems($typeKeys);
+        $data = $this->getDataIterator($items);
         $filter = $this->findFilter($type);
 
         yield from null === $filter
-            ? $items
-            : $filter->filter($items, $options)
+            ? $data
+            : $filter->filter($data, $options)
         ;
     }
 
@@ -119,7 +121,7 @@ class Storage implements StorageInterface
         return isset($this->typeKeys[$type])
             ? \array_keys($this->typeKeys[$type])
             : []
-        ;
+            ;
     }
 
     /**
@@ -159,6 +161,28 @@ class Storage implements StorageInterface
         return $this->container->has($type)
             ? $this->container->get($type)
             : null
-        ;
+            ;
+    }
+
+    /**
+     * @param iterable $items
+     *
+     * @return \Iterator
+     */
+    private function getDataIterator(iterable $items): \Iterator
+    {
+        foreach ($items as $item) {
+            yield $this->getDataFromCacheItem($item);
+        }
+    }
+
+    /**
+     * @param CacheItemInterface $item
+     *
+     * @return mixed
+     */
+    private function getDataFromCacheItem(CacheItemInterface $item)
+    {
+        return $item->get();
     }
 }
