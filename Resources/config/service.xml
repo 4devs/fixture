@@ -18,6 +18,8 @@
                  alias="FDevs\Executor\DependentExecutableIterator"/>
         <service id="FDevs\Executor\DependentExecutableIterator">
             <argument/>
+
+            <tag name="container.service_locator"/>
         </service>
 
     </services>
