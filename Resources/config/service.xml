@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <defaults autowire="true" public="false"/>
+
+        <service id="FDevs\Fixture\Executor"
+                 decorates="FDevs\Executor\ExecutorInterface"
+                 decoration-inner-name="f_devs.executor.inner">
+            <argument type="service" key="$executor" id="f_devs.executor.inner"/>
+        </service>
+        <service id="FDevs\Executor\ExecutorInterface" class="FDevs\Executor\Executor"/>
+
+        <service id="FDevs\Executor\DependentExecutableIteratorInterface"
+                 alias="FDevs\Executor\DependentExecutableIterator"/>
+        <service id="FDevs\Executor\DependentExecutableIterator">
+            <argument/>
+        </service>
+
+    </services>
+
+</container>
