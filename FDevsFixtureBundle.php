@@ -2,7 +2,7 @@
 
 namespace FDevs\Fixture;
 
-use FDevs\Fixture\DependencyInjection\Compiler\FixturesPass;
+use FDevs\Container\Compiler\ServiceLocatorPass;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
@@ -14,7 +14,10 @@ class FDevsFixtureBundle extends Bundle
     public function build(ContainerBuilder $container)
     {
         $container
-            ->addCompilerPass(new FixturesPass())
+            ->addCompilerPass(new ServiceLocatorPass(
+                'f_devs_fixture.dependent_fixture_iterator',
+                'f_devs_fixture.fixture'
+            ))
         ;
     }
 }

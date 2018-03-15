@@ -3,23 +3,29 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
+    <parameters>
+        <parameter key="f_devs_fixture.array_context.class">FDevs\Executor\ArrayContext</parameter>
+    </parameters>
+
     <services>
 
-        <defaults autowire="true" public="false"/>
+        <defaults public="false"/>
 
-        <service id="FDevs\Fixture\Executor"
-                 decorates="FDevs\Executor\ExecutorInterface"
-                 decoration-inner-name="f_devs.executor.inner">
-            <argument type="service" key="$executor" id="f_devs.executor.inner"/>
+        <service id="f_devs_fixture.context_factory" class="FDevs\Fixture\ContextFactory">
+            <argument>%f_devs_fixture.array_context.class%</argument>
         </service>
-        <service id="FDevs\Executor\ExecutorInterface" class="FDevs\Executor\Executor"/>
 
-        <service id="FDevs\Executor\DependentExecutableIteratorInterface"
-                 alias="FDevs\Executor\DependentExecutableIterator"/>
-        <service id="FDevs\Executor\DependentExecutableIterator">
+        <service id="f_devs_fixture.executor" class="FDevs\Fixture\Executor">
+            <argument type="service" id="f_devs_fixture.executor.base"/>
+            <argument type="service" id="event_dispatcher"/>
+        </service>
+
+        <service id="f_devs_fixture.executor.base" class="FDevs\Executor\Executor">
+            <argument type="service" id="f_devs_fixture.dependent_fixture_iterator"/>
+        </service>
+
+        <service id="f_devs_fixture.dependent_fixture_iterator" class="FDevs\Executor\DependentExecutableIterator">
             <argument/>
-
-            <tag name="container.service_locator"/>
         </service>
 
     </services>

@@ -2,6 +2,7 @@
 
 namespace FDevs\Fixture;
 
+use FDevs\Executor\ContextInterface;
 use FDevs\Executor\ExecutorInterface;
 use FDevs\Fixture\Event\ExecuteEvent;
 use FDevs\Fixture\Event\ExecuteExceptionEvent;
@@ -33,7 +34,7 @@ class Executor implements ExecutorInterface
     /**
      * @inheritDoc
      */
-    public function execute(array $context = [], array $fixtures = []): \Iterator
+    public function execute(ContextInterface $context, array $fixtures = []): \Iterator
     {
         $event = new ExecuteEvent($context, $fixtures);
 

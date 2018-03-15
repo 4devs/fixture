@@ -2,6 +2,7 @@
 
 namespace FDevs\Fixture\Command\EventListeners;
 
+use FDevs\Fixture\Command\ContextHandlerInterface;
 use FDevs\Fixture\Command\LoadCommand;
 use Symfony\Component\Console\ConsoleEvents;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
@@ -50,8 +51,10 @@ class LoadContextSubscriber implements EventSubscriberInterface
         $inputDef = $command->getDefinition();
         $this->contextHandler->configureOptions($inputDef);
 
+        $context = $command->getContext();
         $input = new ArgvInput(null, $inputDef);
-        $context = $this->contextHandler->buildContext($input);
+        $this->contextHandler->extendContext($context, $input);
+
         $command->setContext($context);
     }
 }
