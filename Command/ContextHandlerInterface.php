@@ -1,7 +1,8 @@
 <?php
 
-namespace FDevs\Fixture\Command\EventListeners;
+namespace FDevs\Fixture\Command;
 
+use FDevs\Executor\ContextInterface;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -19,9 +20,10 @@ interface ContextHandlerInterface
     /**
      * Create command context from input options
      *
-     * @param InputInterface $input
+     * @param ContextInterface $context
+     * @param InputInterface   $input
      *
-     * @return array    [`name` => value]
+     * @return ContextHandlerInterface
      */
-    public function buildContext(InputInterface $input): array;
+    public function extendContext(ContextInterface $context, InputInterface $input): self;
 }
