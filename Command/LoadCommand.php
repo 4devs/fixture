@@ -2,9 +2,7 @@
 
 namespace FDevs\Fixture\Command;
 
-use FDevs\Executor\ContextInterface;
 use FDevs\Executor\ExecutorInterface;
-use FDevs\Fixture\ContextFactoryInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -20,49 +18,49 @@ class LoadCommand extends Command
     private $executor;
 
     /**
-     * @var ContextInterface
+     * @var array
      */
-    private $context;
+    private $defaultContext;
 
     /**
-     * @var ContextFactoryInterface
+     * @var array
      */
-    private $defaultContextFactory;
+    private $context;
 
     /**
      * ExecuteCommand constructor.
      *
      * @param ExecutorInterface       $executor
-     * @param ContextFactoryInterface $defaultContextFactory
+     * @param array       $defaultContext   [`name` => value]
      * @param string|null             $name
      *
      */
     public function __construct(
         ExecutorInterface $executor,
-        ContextFactoryInterface $defaultContextFactory,
+        array $defaultContext = [],
         string $name = 'fdevs:fixture:load'
     ) {
         $this->executor = $executor;
-        $this->defaultContextFactory = $defaultContextFactory;
+        $this->defaultContext = $defaultContext;
 
         parent::__construct($name);
         $this->resetContext();
     }
 
     /**
-     * @return ContextInterface
+     * @return array    [`name` => value]
      */
-    public function getContext(): ContextInterface
+    public function getContext(): array
     {
         return $this->context;
     }
 
     /**
-     * @param ContextInterface $context
+     * @param array $context    [`name` => value]
      *
      * @return LoadCommand
      */
-    public function setContext(ContextInterface $context): self
+    public function setContext(array $context): self
     {
         $this->context = $context;
 
@@ -111,7 +109,7 @@ class LoadCommand extends Command
      */
     private function resetContext(): self
     {
-        $this->context = $this->defaultContextFactory->createContext();
+        $this->context = $this->defaultContext;
 
         return $this;
     }

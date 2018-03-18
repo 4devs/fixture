@@ -2,7 +2,6 @@
 
 namespace FDevs\Fixture\Command;
 
-use FDevs\Executor\ContextInterface;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -20,10 +19,10 @@ interface ContextHandlerInterface
     /**
      * Create command context from input options
      *
-     * @param ContextInterface $context
      * @param InputInterface   $input
+     * @param array $context    [`name` => value]
      *
-     * @return ContextHandlerInterface
+     * @return array    [`name` => value]
      */
-    public function extendContext(ContextInterface $context, InputInterface $input): self;
+    public function buildContext(InputInterface $input, array $context = []): array ;
 }
