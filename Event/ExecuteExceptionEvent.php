@@ -2,7 +2,6 @@
 
 namespace FDevs\Fixture\Event;
 
-use FDevs\Executor\ContextInterface;
 
 class ExecuteExceptionEvent extends ExecuteEvent
 {
@@ -14,11 +13,11 @@ class ExecuteExceptionEvent extends ExecuteEvent
     /**
      * ExecuteEvent constructor.
      *
-     * @param ContextInterface      $context
+     * @param array      $context   [`name` => value]
      * @param string[]   $fixtures Array of fixtures service ids to execute
      * @param \Throwable $exception
      */
-    public function __construct(ContextInterface $context, array $fixtures, \Throwable $exception)
+    public function __construct(array $context, array $fixtures, \Throwable $exception)
     {
         parent::__construct($context, $fixtures);
         $this->exception = $exception;

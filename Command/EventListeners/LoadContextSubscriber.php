@@ -53,8 +53,8 @@ class LoadContextSubscriber implements EventSubscriberInterface
 
         $context = $command->getContext();
         $input = new ArgvInput(null, $inputDef);
-        $this->contextHandler->extendContext($context, $input);
+        $updContext = $this->contextHandler->buildContext($input, $context);
 
-        $command->setContext($context);
+        $command->setContext($updContext);
     }
 }

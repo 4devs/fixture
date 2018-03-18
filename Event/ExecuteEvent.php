@@ -2,13 +2,12 @@
 
 namespace FDevs\Fixture\Event;
 
-use FDevs\Executor\ContextInterface;
 use Symfony\Component\EventDispatcher\Event;
 
 class ExecuteEvent extends Event
 {
     /**
-     * @var ContextInterface
+     * @var array
      */
     private $context;
     /**
@@ -19,19 +18,19 @@ class ExecuteEvent extends Event
     /**
      * ExecuteEvent constructor.
      *
-     * @param ContextInterface $context
+     * @param array $context   [`name` => value]
      * @param string[]         $fixtures Array of fixtures service ids to execute
      */
-    public function __construct(ContextInterface $context, array $fixtures)
+    public function __construct(array $context, array $fixtures)
     {
         $this->context = $context;
         $this->fixtures = $fixtures;
     }
 
     /**
-     * @return ContextInterface
+     * @return array
      */
-    public function getContext(): ContextInterface
+    public function getContext(): array
     {
         return $this->context;
     }

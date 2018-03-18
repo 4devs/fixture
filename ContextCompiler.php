@@ -2,7 +2,6 @@
 
 namespace FDevs\Fixture;
 
-use FDevs\Executor\ContextInterface;
 use FDevs\Fixture\Command\ContextHandlerInterface;
 use Symfony\Component\Console\Input\InputDefinition;
 use Symfony\Component\Console\Input\InputInterface;
@@ -39,13 +38,13 @@ class ContextCompiler implements ContextHandlerInterface
     /**
      * @inheritDoc
      */
-    public function extendContext(ContextInterface $context, InputInterface $input): ContextHandlerInterface
+    public function buildContext(InputInterface $input, array $context = []): array
     {
-        $this->proceedHandlers(function (ContextHandlerInterface $handler) use ($context, $input) {
-            $handler->extendContext($context, $input);
+        $this->proceedHandlers(function (ContextHandlerInterface $handler) use (&$context, $input) {
+            $context = $handler->buildContext($input, $context);
         });
 
-        return $this;
+        return $context;
     }
 
     /**
