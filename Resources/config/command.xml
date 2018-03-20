@@ -9,12 +9,9 @@
 
         <service id="FDevs\Fixture\Command\LoadCommand">
             <argument type="service" id="f_devs_fixture.executor"/>
-            <argument type="service" id="f_devs_fixture.default_context_factory"/>
 
             <tag name="console.command" command="fdevs:fixture:load"/>
         </service>
-
-        <service id="f_devs_fixture.default_context_factory" alias="f_devs_fixture.context_factory"/>
 
     </services>
 

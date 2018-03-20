@@ -2,7 +2,6 @@
 
 namespace FDevs\Fixture\Adapter\Doctrine;
 
-
 use Doctrine\Common\DataFixtures\FixtureInterface as DoctrineFixture;
 use Doctrine\Common\Persistence\ObjectManager;
 use FDevs\Fixture\FixtureInterface;

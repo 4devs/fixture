@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <defaults public="false"/>
+
+        <service id="f_devs_fixture.adapter.doctrine.fixture_factory" class="FDevs\Fixture\Adapter\Doctrine\FixtureFactory">
+            <argument type="service" id="f_devs_fixture.adapter.doctrine.result_factory"/>
+        </service>
+
+        <service id="f_devs_fixture.adapter.doctrine.result_factory" class="FDevs\Fixture\Adapter\Doctrine\ResultFactory"/>
+
+        <service id="f_devs_fixture.adapter.doctrine.reference_repository_factory" class="FDevs\Fixture\Adapter\Doctrine\ReferenceRepositoryFactory"/>
+
+    </services>
+
+</container>

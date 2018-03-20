@@ -2,7 +2,6 @@
 
 namespace FDevs\Fixture\Adapter\Doctrine;
 
-
 use Doctrine\Common\DataFixtures\FixtureInterface;
 use FDevs\Executor\ResultInterface;
 
@@ -28,7 +27,7 @@ class Result implements ResultInterface
      */
     public function __toString(): string
     {
-        return 'Fixture "' . \get_class() . '" completed';
+        return 'Fixture "' . \get_class($this->getFixture()) . '" succesfully executed';
     }
 
     /**
