@@ -2,12 +2,15 @@
 
 namespace FDevs\Fixture\DependencyInjection;
 
-use Doctrine\Common\DataFixtures\FixtureInterface;
 use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\Common\DataFixtures\SharedFixtureInterface;
-use FDevs\Fixture\Command\EventListeners\LoadContextSubscriber;
+use FDevs\Fixture\Command\ContextHandler\PurgeHandler;
+use FDevs\Fixture\Command\EventListeners\Context\PurgeSubscriber;
+use FDevs\Fixture\CompositePurger;
+use FDevs\Fixture\DependencyInjection\Compiler\LoadCommandContextPass;
 use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Argument\TaggedIteratorArgument;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Definition;
@@ -17,6 +20,8 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 class FDevsFixtureExtension extends Extension
 {
+    public const TAG_FIXTURE_PURGER = 'fdevs.fixture.purger';
+
     /**
      * @inheritDoc
      */
@@ -44,16 +49,55 @@ class FDevsFixtureExtension extends Extension
      */
     private function prepareLoadCommandContextSubscriber(array $config, ContainerBuilder $container): self
     {
-        $configHandler = $config['load_command']['context_handler'] ?? null;
+        if (!isset($config['load_command'])) {
+            return $this;
+        }
+        $cmdConfig = $config['load_command'];
 
-        if (null !== $configHandler) {
-            $handlerRef = new Reference($configHandler);
-            $def = new Definition(LoadContextSubscriber::class, [$handlerRef]);
-            $def
+        $contextHandlerPrefix = $this->getServiceLoadCommandPrefix() . 'context_handler.';
+        $eventListenerPrefix = $this->getServiceLoadCommandPrefix() . 'event_listener.context.';
+
+        $this
+            ->prepareCommandPurgeOption($cmdConfig['purge'], $container, $contextHandlerPrefix, $eventListenerPrefix)
+        ;
+
+        return $this;
+    }
+
+    /**
+     * @param array            $purgeConfig
+     * @param ContainerBuilder $container
+     * @param string           $handlerPrefix
+     * @param string           $eventPrefix
+     *
+     * @return FDevsFixtureExtension
+     */
+    private function prepareCommandPurgeOption(
+        array $purgeConfig,
+        ContainerBuilder $container,
+        string $handlerPrefix,
+        string $eventPrefix
+    ): self {
+        if ($purgeConfig['allowed']) {
+            $purgeHandlerDef = new Definition(PurgeHandler::class);
+            $purgeHandlerDef
+                ->addTag(LoadCommandContextPass::TAG_HANDLER)
+            ;
+            $container->setDefinition($handlerPrefix . 'purge', $purgeHandlerDef);
+
+            if (isset($purgeConfig['service_id'])) {
+                $purgerService = new Reference($purgeConfig['service_id']);
+            } else {
+                $purgerService = new Definition(CompositePurger::class);
+                $purgerService
+                    ->addArgument(new TaggedIteratorArgument(self::TAG_FIXTURE_PURGER))
+                ;
+            }
+            $purgerSubscriberDef = new Definition(PurgeSubscriber::class, [$purgerService]);
+            $purgerSubscriberDef
                 ->addTag('kernel.event_subscriber')
             ;
-
-            $container->setDefinition(LoadContextSubscriber::class, $def);
+            $container->setDefinition($eventPrefix . 'purge', $purgerSubscriberDef);
         }
 
         return $this;
@@ -70,7 +114,6 @@ class FDevsFixtureExtension extends Extension
         if (!isset($config['adapter_doctrine'])) {
             return $this;
         }
-
 
         $adapterConfig = $config['adapter_doctrine'];
         $fixturesConfig = $adapterConfig['fixtures'];
@@ -89,7 +132,7 @@ class FDevsFixtureExtension extends Extension
             $loadedFixtures = $loader->getFixtures();
             foreach ($loadedFixtures as $loadedFixture) {
                 $fixtureClass = \get_class($loadedFixture);
-                $fixtureId = $this->getServiceAdapterDoctrinePrefix() . $fixtureClass;
+                $fixtureId = $this->getAlias() . 'adapter.doctrine.fixture.' . $fixtureClass;
                 $managerId = $fixtureConfig['manager'];
                 $managerRef = new Reference($managerId);
                 $doctrineDef = new Definition($fixtureClass);
@@ -137,8 +180,8 @@ class FDevsFixtureExtension extends Extension
     /**
      * @return string
      */
-    private function getServiceAdapterDoctrinePrefix(): string
+    private function getServiceLoadCommandPrefix(): string
     {
-        return $this->getAlias() . 'adapter.doctrine.fixture.';
+        return $this->getAlias() . 'load_command.';
     }
 }

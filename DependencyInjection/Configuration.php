@@ -35,15 +35,60 @@ class Configuration implements ConfigurationInterface
     {
         $treeBuilder = new TreeBuilder();
         $node = $treeBuilder->root('load_command');
+
         $node
             ->children()
-                ->scalarNode('context_handler')
-                    ->info('Service id of ContextHandlerInterface. ' .
-                        'If set, will be created LoadContextSubscriber injecting that service, to set ' .
-                        'LoadCommand context on execute. Otherwise context would be empty')
+                ->arrayNode('purge')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->booleanNode('allowed')
+                            ->defaultFalse()
+                            ->info('If true, then inject Pur. ' .
+                                'If not specified and `allowed` is true, then FDevs\Fixture\CompositePurger injected to subscriber')
+                        ->end()
+                        ->scalarNode('service_id')
+                            ->info('Service id of FDevs\Fixture\PurgerInterface. ' .
+                                'If not specified and `allowed` is true, then FDevs\Fixture\CompositePurger injected to subscriber. ' .
+                                'Base FDevs\Fixture\CompositePurger injects services tagged "' . FDevsFixtureExtension::TAG_FIXTURE_PURGER . '"')
+                        ->end()
+                    ->end()
+                    ->beforeNormalization()
+                        ->ifTrue(function ($value) {
+                            return \is_bool($value);
+                        })
+                        ->then(function ($value) {
+                            return [
+                                'allowed' => $value,
+                            ];
+                        })
+                    ->end()
+                    ->beforeNormalization()
+                        ->ifString()
+                        ->then(function ($value) {
+                            return [
+                                'allowed' => true,
+                                'service_id' => $value,
+                            ];
+                        })
+                    ->end()
                 ->end()
             ->end()
         ;
+//        $node
+//            ->children()
+//                ->arrayNode('context')
+//            ->info('Service id of ContextHandlerInterface. ' .
+//                'If set, will be created LoadContextSubscriber injecting that service, to set ' .
+//                'LoadCommand context on execute. Otherwise context would be empty')
+//                    ->children()
+//                        ->arrayNode('handlers')
+//                            ->scalarPrototype()
+//                            ->end()
+//                        ->end()
+//                    ->end()
+//                ->end()
+//            ->end()
+//        ;
 
         return $node;
     }
