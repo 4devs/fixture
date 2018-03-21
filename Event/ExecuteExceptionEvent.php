@@ -2,7 +2,6 @@
 
 namespace FDevs\Fixture\Event;
 
-
 class ExecuteExceptionEvent extends ExecuteEvent
 {
     /**

@@ -19,6 +19,7 @@
     "fdevs/executor": "dev-master"
   },
   "require-dev": {
+    "doctrine/data-fixtures": "^1.3.0",
     "fdevs/container": "^0.1.0",
     "friendsofphp/php-cs-fixer": "^2.10",
     "psr/cache": "^1.0",
@@ -29,6 +30,7 @@
     "symfony/http-kernel": "^3.4 | ^4.0"
   },
   "suggest": {
+    "doctrine/data-fixtures": "use adapter for doctrine fixtures",
     "fdevs/container": "service locator using",
     "psr/cache": "Used in cache based storage implementation",
     "symfony/console": "Allow to use symfony console",
