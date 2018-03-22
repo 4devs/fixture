@@ -13,6 +13,8 @@ use Psr\Container\NotFoundExceptionInterface;
 
 class Storage implements StorageInterface
 {
+    private const RESERVED_KEY_CHARACTERS = ['{', '}', '(', ')', '/', '\\', '@'];
+
     /**
      * @var array
      */
@@ -33,6 +35,11 @@ class Storage implements StorageInterface
      * @var int|null
      */
     private $ttl;
+
+    /**
+     * @var array
+     */
+    private $keyReplaceMapping;
 
     /**
      * Storage constructor.
@@ -112,6 +119,14 @@ class Storage implements StorageInterface
     }
 
     /**
+     * @inheritDoc
+     */
+    public function has(string $key): bool
+    {
+        return $this->getCachePool()->hasItem($key);
+    }
+
+    /**
      * @param string $type
      *
      * @return array
@@ -145,7 +160,12 @@ class Storage implements StorageInterface
      */
     protected function createKey(string $type): string
     {
-        return $this->keyPrefix . $type . '_' . \count($this->getTypeKeys($type));
+        $key = $this->keyPrefix . $type . '_' . \count($this->getTypeKeys($type));
+        if (null === $this->keyReplaceMapping) {
+            $this->keyReplaceMapping = \array_fill_keys(self::RESERVED_KEY_CHARACTERS, '_');
+        }
+
+        return strtr($key, $this->keyReplaceMapping);
     }
 
     /**
@@ -171,8 +191,8 @@ class Storage implements StorageInterface
      */
     private function getDataIterator(iterable $items): \Iterator
     {
-        foreach ($items as $item) {
-            yield $this->getDataFromCacheItem($item);
+        foreach ($items as $key => $item) {
+            yield $key => $this->getDataFromCacheItem($item);
         }
     }
 
