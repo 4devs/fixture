@@ -43,7 +43,7 @@ class PurgeSubscriber implements EventSubscriberInterface
     public function processPurge(ExecuteEvent $event): self
     {
         if ($event->getContext()[PurgeHandler::OPTION_PURGE]) {
-            $this->purger->purge();
+            $this->purger->purge($event->getContext());
         }
 
         return $this;

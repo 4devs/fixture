@@ -5,6 +5,7 @@ namespace FDevs\Fixture\DependencyInjection;
 use Doctrine\Common\DataFixtures\Loader;
 use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\Common\DataFixtures\SharedFixtureInterface;
+use FDevs\Fixture\Adapter\Doctrine\ORMPurger;
 use FDevs\Fixture\Command\ContextHandler\PurgeHandler;
 use FDevs\Fixture\Command\EventListeners\Context\PurgeSubscriber;
 use FDevs\Fixture\CompositePurger;
@@ -54,8 +55,9 @@ class FDevsFixtureExtension extends Extension
         }
         $cmdConfig = $config['load_command'];
 
-        $contextHandlerPrefix = $this->getServiceLoadCommandPrefix().'context_handler.';
-        $eventListenerPrefix = $this->getServiceLoadCommandPrefix().'event_listener.context.';
+        $loadCommandPrefix = $this->getAlias().'.load_command.';
+        $contextHandlerPrefix = $loadCommandPrefix.'context_handler.';
+        $eventListenerPrefix = $loadCommandPrefix.'event_listener.context.';
 
         $this
             ->prepareCommandPurgeOption($cmdConfig['purge'], $container, $contextHandlerPrefix, $eventListenerPrefix)
@@ -85,18 +87,13 @@ class FDevsFixtureExtension extends Extension
             ;
             $container->setDefinition($handlerPrefix.'purge', $purgeHandlerDef);
 
-            if (isset($purgeConfig['service_id'])) {
-                $purgerService = new Reference($purgeConfig['service_id']);
-            } else {
-                $purgerService = new Definition(CompositePurger::class);
-                $purgerService
-                    ->addArgument(new TaggedIteratorArgument(self::TAG_FIXTURE_PURGER))
-                ;
-            }
-            $purgerSubscriberDef = new Definition(PurgeSubscriber::class, [$purgerService]);
-            $purgerSubscriberDef
-                ->addTag('kernel.event_subscriber')
+            $purgerService = isset($purgeConfig['service_id'])
+                ? new Reference($purgeConfig['service_id'])
+                : $this->createCompositePurgerDefinition(
+                    new TaggedIteratorArgument(self::TAG_FIXTURE_PURGER)
+                )
             ;
+            $purgerSubscriberDef = $this->createPurgeSubscriberDefinition($purgerService);
             $container->setDefinition($eventPrefix.'purge', $purgerSubscriberDef);
         }
 
@@ -114,10 +111,15 @@ class FDevsFixtureExtension extends Extension
         if (!isset($config['adapter_doctrine'])) {
             return $this;
         }
+        $adapterDoctrinePrefix = $this->getAlias().'.adapter.doctrine.';
+        $eventPrefix = $adapterDoctrinePrefix.'event_listener.';
 
         $adapterConfig = $config['adapter_doctrine'];
         $fixturesConfig = $adapterConfig['fixtures'];
 
+        /** @var Reference[] $managerIds [`id` => Reference]*/
+        $managerRefs = [];
+        /** @var Definition[] $referenceRepositoryDefs [`referenceDefKey` => Definition]*/
         $referenceRepositoryDefs = [];
         foreach ($fixturesConfig as $fixtureConfig) {
             $loader = new Loader();
@@ -134,8 +136,12 @@ class FDevsFixtureExtension extends Extension
                 $fixtureClass = \get_class($loadedFixture);
                 $fixtureId = $this->getAlias().'adapter.doctrine.fixture.'.$fixtureClass;
                 $managerId = $fixtureConfig['manager'];
-                $managerRef = new Reference($managerId);
+                if (!isset($managerRefs[$managerId])) {
+                    $managerRefs[$managerId] = new Reference($managerId);
+                }
+                $managerRef = $managerRefs[$managerId];
                 $doctrineDef = new Definition($fixtureClass);
+
                 if (
                     isset($fixtureConfig['container'])
                     && \is_a($fixtureClass, ContainerAwareInterface::class, true)
@@ -156,7 +162,7 @@ class FDevsFixtureExtension extends Extension
                         ;
                         $referenceRepositoryDefs[$referenceDefKey] = $def;
                     }
-                    $doctrineDef->addMethodCall('setReferenceRepository', [$referenceRepositoryDefs[$managerId]]);
+                    $doctrineDef->addMethodCall('setReferenceRepository', [$referenceRepositoryDefs[$referenceDefKey]]);
                 }
 
                 $def = new Definition($fixtureClass);
@@ -175,14 +181,49 @@ class FDevsFixtureExtension extends Extension
             }
         }
 
+        if (!empty($managerRefs) && isset($adapterConfig['purge'])) {
+            $purgeConfig = $adapterConfig['purge'];
+
+            $emPurgerDefs = \array_map(function (Reference $managerRef) use ($purgeConfig) {
+                $def = new Definition(ORMPurger::class);
+                $def
+                    ->setFactory([new Reference($purgeConfig['purger_factory']), 'create'])
+                    ->addArgument($managerRef)
+                ;
+
+                return $def;
+            }, $managerRefs);
+
+            $compositePurgerDef = $this->createCompositePurgerDefinition($emPurgerDefs);
+            $purgeSubscriber = $this->createPurgeSubscriberDefinition($compositePurgerDef);
+            $container->setDefinition($eventPrefix.'purge', $purgeSubscriber);
+        }
+
         return $this;
     }
 
     /**
-     * @return string
+     * Arguments injected into purger
+     *
+     * @return Definition
      */
-    private function getServiceLoadCommandPrefix(): string
+    private function createCompositePurgerDefinition(): Definition
     {
-        return $this->getAlias().'load_command.';
+        return new Definition(CompositePurger::class, \func_get_args());
+    }
+
+    /**
+     * Arguments injected into subscriber
+     *
+     * @return Definition
+     */
+    private function createPurgeSubscriberDefinition(): Definition
+    {
+        $def = new Definition(PurgeSubscriber::class, \func_get_args());
+        $def
+            ->addTag('kernel.event_subscriber')
+        ;
+
+        return $def;
     }
 }

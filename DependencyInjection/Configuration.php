@@ -8,9 +8,10 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
+    private const VALUE_ADAPTER_DOCTRINE_CONTAINER = 'service_container';
     private const VALUE_ADAPTER_DOCTRINE_FIXTURE_FACTORY = 'f_devs_fixture.adapter.doctrine.fixture_factory';
     private const VALUE_ADAPTER_DOCTRINE_REFERENCE_REPOSITORY_FACTORY = 'f_devs_fixture.adapter.doctrine.reference_repository_factory';
-    private const VALUE_ADAPTER_DOCTRINE_CONTAINER = 'service_container';
+    private const VALUE_ADAPTER_DOCTRINE_ORM_PURGER_FACTORY = 'f_devs_fixture.adapter.doctrine.orm_purger_factory';
 
     /**
      * @inheritDoc
@@ -74,21 +75,6 @@ class Configuration implements ConfigurationInterface
                 ->end()
             ->end()
         ;
-//        $node
-//            ->children()
-//                ->arrayNode('context')
-//            ->info('Service id of ContextHandlerInterface. ' .
-//                'If set, will be created LoadContextSubscriber injecting that service, to set ' .
-//                'LoadCommand context on execute. Otherwise context would be empty')
-//                    ->children()
-//                        ->arrayNode('handlers')
-//                            ->scalarPrototype()
-//                            ->end()
-//                        ->end()
-//                    ->end()
-//                ->end()
-//            ->end()
-//        ;
 
         return $node;
     }
@@ -121,7 +107,7 @@ class Configuration implements ConfigurationInterface
                             ->scalarNode('manager')
                                 ->isRequired()
                                 ->info('Service id of doctrine object manager for fixtures. ' .
-                                    'MUST implement Doctrine\Common\Persistence\ObjectManager')
+                                    'MUST implement Doctrine\ORM\EntityManagerInterface')
                             ->end()
                             ->scalarNode('factory')
                                 ->isRequired()
@@ -144,7 +130,7 @@ class Configuration implements ConfigurationInterface
                 ->end()
                 ->scalarNode('manager')
                     ->info('Service id of doctrine object manager for fixtures. ' .
-                        'MUST implement Doctrine\Common\Persistence\ObjectManager' .
+                        'MUST implement Doctrine\ORM\EntityManagerInterface' .
                         'Applied to each element in fixtures, if not defiend')
                 ->end()
                 ->scalarNode('factory')
@@ -162,6 +148,25 @@ class Configuration implements ConfigurationInterface
                         'MUST implement FDevs\Fixture\Adapter\Doctrine\ReferenceRepositoryFactoryInterface. ' .
                         'Applied to each element in fixtures, if not defiend')
                 ->end()
+                ->arrayNode('purge')
+                    ->addDefaultsIfNotSet()
+                    ->children()
+                        ->scalarNode('purger_factory')
+                            ->defaultValue(self::VALUE_ADAPTER_DOCTRINE_ORM_PURGER_FACTORY)
+                            ->info('Service id of factory to create orm purger for doctrine fixtures. ' .
+                                'MUST implement FDevs\Fixture\Adapter\Doctrine\ORMPurgerFactoryInterface.')
+                        ->end()
+                        ->arrayNode('exclude')
+                            ->defaultValue([])
+                            ->info('List of tables, excluded to purge')
+                            ->scalarPrototype()
+                            ->end()
+                        ->end()
+                    ->end()
+                ->end()
+
+                ->scalarNode('orm_purger_factory')
+                ->end()
             ->end()
             ->beforeNormalization() // apply defaults manager and factory for fixtures
                 ->always(function ($data) {
@@ -170,7 +175,7 @@ class Configuration implements ConfigurationInterface
                     $defaultContainer = $data['container'] ?? self::VALUE_ADAPTER_DOCTRINE_CONTAINER;
                     $defaultReferenceFactory = $data['reference_repository_factory'] ?? self::VALUE_ADAPTER_DOCTRINE_REFERENCE_REPOSITORY_FACTORY;
 
-                    foreach ($data['fixtures'] as $key => $fixture) {
+                    foreach ($data['fixtures'] ?? [] as $key => $fixture) {
                         if (null !== $defaultManager && !isset($fixture['manager'])) {
                             $data['fixtures'][$key]['manager'] = $defaultManager;
                         }

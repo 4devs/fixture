@@ -23,10 +23,10 @@ class CompositePurger implements PurgerInterface
     /**
      * @inheritDoc
      */
-    public function purge(): PurgerInterface
+    public function purge(array $context): PurgerInterface
     {
         foreach ($this->purgers as $purger) {
-            $this->proceedPurge($purger);
+            $this->proceedPurge($purger, $context);
         }
 
         return $this;
@@ -34,12 +34,13 @@ class CompositePurger implements PurgerInterface
 
     /**
      * @param PurgerInterface $purger
+     * @param array           $context
      *
      * @return CompositePurger
      */
-    private function proceedPurge(PurgerInterface $purger): self
+    private function proceedPurge(PurgerInterface $purger, array $context): self
     {
-        $purger->purge();
+        $purger->purge($context);
 
         return $this;
     }

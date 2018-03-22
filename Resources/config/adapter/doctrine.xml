@@ -15,6 +15,8 @@
 
         <service id="f_devs_fixture.adapter.doctrine.reference_repository_factory" class="FDevs\Fixture\Adapter\Doctrine\ReferenceRepositoryFactory"/>
 
+        <service id="f_devs_fixture.adapter.doctrine.orm_purger_factory" class="FDevs\Fixture\Adapter\Doctrine\ORMPurgerFactory"/>
+
     </services>
 
 </container>
