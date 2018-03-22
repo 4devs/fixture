@@ -8,7 +8,7 @@ interface FilterInterface
      * @param iterable $items
      * @param array    $options ['name' => value]
      *
-     * @return \Iterator Iterator of filtered items
+     * @return \Iterator Iterator of filtered items. Keys of items must be retained
      */
     public function filter(iterable $items, array $options): \Iterator;
 }

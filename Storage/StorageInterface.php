@@ -21,7 +21,7 @@ interface StorageInterface
      * @param string $type
      * @param array  $options
      *
-     * @return \Iterator    Iterator of stored data by options
+     * @return \Iterator    Iterator of stored data filtered by options. Ech key of element matches its stored key
      */
     public function find(string $type, array $options): \Iterator;
 
@@ -33,4 +33,11 @@ interface StorageInterface
      * @return mixed
      */
     public function get(string $key);
+
+    /**
+     * @param string $key
+     *
+     * @return bool
+     */
+    public function has(string $key): bool;
 }
