@@ -119,8 +119,8 @@ class FDevsFixtureExtension extends Extension
 
         /** @var Reference[] $managerIds [`id` => Reference]*/
         $managerRefs = [];
-        /** @var Definition[] $referenceRepositoryDefs [`referenceDefKey` => Definition]*/
-        $referenceRepositoryDefs = [];
+        /** @var Definition[] $referenceRepoRefs [`referenceDefKey` => Definition]*/
+        $referenceRepoRefs = [];
         foreach ($fixturesConfig as $fixtureConfig) {
             $loader = new Loader();
             $path = $fixtureConfig['path'];
@@ -153,16 +153,18 @@ class FDevsFixtureExtension extends Extension
                     isset($fixtureConfig['reference_repository_factory'])
                     && \is_a($fixtureClass, SharedFixtureInterface::class, true)
                 ) {
-                    $referenceDefKey = $fixtureConfig['reference_repository_factory'].':'.$managerId;
-                    if (!isset($referenceRepositoryDefs[$referenceDefKey])) {
+                    $referenceRefKey = $fixtureConfig['reference_repository_factory'].':'.$managerId;
+                    if (!isset($referenceRepoRefs[$referenceRefKey])) {
                         $def = new Definition(ReferenceRepository::class);
                         $def
                             ->setFactory([new Reference($fixtureConfig['reference_repository_factory']), 'create'])
                             ->addArgument($managerRef)
                         ;
-                        $referenceRepositoryDefs[$referenceDefKey] = $def;
+                        $repoServiceId = $adapterDoctrinePrefix . 'reference_repository_' . \count($referenceRepoRefs);
+                        $container->setDefinition($repoServiceId, $def);
+                        $referenceRepoRefs[$referenceRefKey] = new Reference($repoServiceId);
                     }
-                    $doctrineDef->addMethodCall('setReferenceRepository', [$referenceRepositoryDefs[$referenceDefKey]]);
+                    $doctrineDef->addMethodCall('setReferenceRepository', [$referenceRepoRefs[$referenceRefKey]]);
                 }
 
                 $def = new Definition($fixtureClass);
