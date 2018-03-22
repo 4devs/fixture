@@ -23,7 +23,7 @@ class FDevsFixtureExtension extends Extension
     public const TAG_FIXTURE_PURGER = 'fdevs.fixture.purger';
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function load(array $configs, ContainerBuilder $container)
     {
@@ -54,8 +54,8 @@ class FDevsFixtureExtension extends Extension
         }
         $cmdConfig = $config['load_command'];
 
-        $contextHandlerPrefix = $this->getServiceLoadCommandPrefix() . 'context_handler.';
-        $eventListenerPrefix = $this->getServiceLoadCommandPrefix() . 'event_listener.context.';
+        $contextHandlerPrefix = $this->getServiceLoadCommandPrefix().'context_handler.';
+        $eventListenerPrefix = $this->getServiceLoadCommandPrefix().'event_listener.context.';
 
         $this
             ->prepareCommandPurgeOption($cmdConfig['purge'], $container, $contextHandlerPrefix, $eventListenerPrefix)
@@ -83,7 +83,7 @@ class FDevsFixtureExtension extends Extension
             $purgeHandlerDef
                 ->addTag(LoadCommandContextPass::TAG_HANDLER)
             ;
-            $container->setDefinition($handlerPrefix . 'purge', $purgeHandlerDef);
+            $container->setDefinition($handlerPrefix.'purge', $purgeHandlerDef);
 
             if (isset($purgeConfig['service_id'])) {
                 $purgerService = new Reference($purgeConfig['service_id']);
@@ -97,7 +97,7 @@ class FDevsFixtureExtension extends Extension
             $purgerSubscriberDef
                 ->addTag('kernel.event_subscriber')
             ;
-            $container->setDefinition($eventPrefix . 'purge', $purgerSubscriberDef);
+            $container->setDefinition($eventPrefix.'purge', $purgerSubscriberDef);
         }
 
         return $this;
@@ -132,7 +132,7 @@ class FDevsFixtureExtension extends Extension
             $loadedFixtures = $loader->getFixtures();
             foreach ($loadedFixtures as $loadedFixture) {
                 $fixtureClass = \get_class($loadedFixture);
-                $fixtureId = $this->getAlias() . 'adapter.doctrine.fixture.' . $fixtureClass;
+                $fixtureId = $this->getAlias().'adapter.doctrine.fixture.'.$fixtureClass;
                 $managerId = $fixtureConfig['manager'];
                 $managerRef = new Reference($managerId);
                 $doctrineDef = new Definition($fixtureClass);
@@ -147,13 +147,14 @@ class FDevsFixtureExtension extends Extension
                     isset($fixtureConfig['reference_repository_factory'])
                     && \is_a($fixtureClass, SharedFixtureInterface::class, true)
                 ) {
-                    if (!isset($referenceRepositoryDefs[$managerId])) {
+                    $referenceDefKey = $fixtureConfig['reference_repository_factory'].':'.$managerId;
+                    if (!isset($referenceRepositoryDefs[$referenceDefKey])) {
                         $def = new Definition(ReferenceRepository::class);
                         $def
                             ->setFactory([new Reference($fixtureConfig['reference_repository_factory']), 'create'])
                             ->addArgument($managerRef)
                         ;
-                        $referenceRepositoryDefs[$managerId] = $def;
+                        $referenceRepositoryDefs[$referenceDefKey] = $def;
                     }
                     $doctrineDef->addMethodCall('setReferenceRepository', [$referenceRepositoryDefs[$managerId]]);
                 }
@@ -182,6 +183,6 @@ class FDevsFixtureExtension extends Extension
      */
     private function getServiceLoadCommandPrefix(): string
     {
-        return $this->getAlias() . 'load_command.';
+        return $this->getAlias().'load_command.';
     }
 }
