@@ -62,7 +62,7 @@ class Storage implements StorageInterface
     {
         $foundObjects = $this->storage->find($type, $options);
         foreach ($foundObjects as $key => $object) {
-            yield $this->prepareStoredObject($key, $object);
+            yield $key => $this->prepareStoredObject($key, $object);
         }
     }
 
