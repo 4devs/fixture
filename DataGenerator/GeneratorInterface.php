@@ -9,5 +9,5 @@ interface GeneratorInterface
      *
      * @return \Iterator Iterator of array
      */
-    public function generate(array $options): \Iterator;
+    public function generate(array $options = []): \Iterator;
 }
