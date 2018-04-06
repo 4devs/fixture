@@ -5,10 +5,8 @@ namespace FDevs\Fixture\Storage\FilterStorage;
 use FDevs\Fixture\Exception\Storage\NotFoundException;
 use FDevs\Fixture\Exception\Storage\StoreItemException;
 use FDevs\Fixture\Storage\StorageInterface;
-use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
 use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
 class Storage implements StorageInterface
@@ -20,9 +18,9 @@ class Storage implements StorageInterface
      */
     private $typeKeys = [];
     /**
-     * @var ContainerInterface
+     * @var FilterInterface|null
      */
-    private $container;
+    private $filter;
     /**
      * @var CacheItemPoolInterface
      */
@@ -44,18 +42,18 @@ class Storage implements StorageInterface
     /**
      * Storage constructor.
      *
-     * @param ContainerInterface     $container
      * @param CacheItemPoolInterface $cachePool
+     * @param FilterInterface     $filter
      * @param string                 $keyPrefix
      * @param int|null               $ttl
      */
     public function __construct(
-        ContainerInterface $container,
         CacheItemPoolInterface $cachePool,
+        FilterInterface $filter = null,
         string $keyPrefix = '',
         int $ttl = null
     ) {
-        $this->container = $container;
+        $this->filter = $filter;
         $this->cachePool = $cachePool;
         $this->keyPrefix = $keyPrefix;
         $this->ttl = $ttl;
@@ -64,16 +62,14 @@ class Storage implements StorageInterface
     /**
      * {@inheritdoc}
      */
-    public function find(string $type, array $options): \Iterator
+    public function find(string $type, array $options): \Generator
     {
         $typeKeys = $this->getTypeKeys($type);
-        $items = $this->getCachePool()->getItems($typeKeys);
-        $data = $this->getDataIterator($items);
-        $filter = $this->findFilter($type);
+        $data = $this->getDataGenerator($typeKeys);
 
-        yield from null === $filter
+        yield from null === $this->filter
             ? $data
-            : $filter->filter($data, $options)
+            : $this->filter->filter($data, $options)
         ;
     }
 
@@ -104,9 +100,8 @@ class Storage implements StorageInterface
      */
     public function get(string $key)
     {
-        $pool = $this->getCachePool();
-        $item = $pool->hasItem($key)
-            ? $pool->getItem($key)
+        $item = $this->has($key)
+            ? $this->getCachePool()->getItem($key)
             : null
         ;
 
@@ -169,40 +164,16 @@ class Storage implements StorageInterface
     }
 
     /**
-     * @param string $type
+     * @param iterable $keys
      *
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
+     * @throws NotFoundException
      *
-     * @return FilterInterface
+     * @return \Generator
      */
-    private function findFilter(string $type): ?FilterInterface
+    private function getDataGenerator(iterable $keys): \Generator
     {
-        return $this->container->has($type)
-            ? $this->container->get($type)
-            : null
-            ;
-    }
-
-    /**
-     * @param iterable $items
-     *
-     * @return \Iterator
-     */
-    private function getDataIterator(iterable $items): \Iterator
-    {
-        foreach ($items as $key => $item) {
-            yield $key => $this->getDataFromCacheItem($item);
+        foreach ($keys as $key) {
+            yield $key => $this->get($key);
         }
-    }
-
-    /**
-     * @param CacheItemInterface $item
-     *
-     * @return mixed
-     */
-    private function getDataFromCacheItem(CacheItemInterface $item)
-    {
-        return $item->get();
     }
 }
