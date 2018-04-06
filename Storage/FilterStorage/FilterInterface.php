@@ -5,10 +5,10 @@ namespace FDevs\Fixture\Storage\FilterStorage;
 interface FilterInterface
 {
     /**
-     * @param iterable $items
+     * @param \Generator $items
      * @param array    $options ['name' => value]
      *
-     * @return \Iterator Iterator of filtered items. Keys of items must be retained
+     * @return \Generator Generator of filtered items. Keys of items must be retained
      */
-    public function filter(iterable $items, array $options): \Iterator;
+    public function filter(\Generator $items, array $options): \Generator;
 }

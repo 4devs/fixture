@@ -5,14 +5,14 @@ namespace FDevs\Fixture\Storage\FilterStorage;
 class ChainFilterReduce implements FilterInterface
 {
     /**
-     * @var iterable|SupportFilterInterface[]
+     * @var iterable|ChainedFilterInterface[]
      */
     private $filters;
 
     /**
      * ChainFilter constructor.
      *
-     * @param iterable|SupportFilterInterface[]     $filters
+     * @param iterable|ChainedFilterInterface[] $filters
      */
     public function __construct(iterable $filters = [])
     {
@@ -22,35 +22,20 @@ class ChainFilterReduce implements FilterInterface
     /**
      * {@inheritdoc}
      */
-    public function filter(iterable $items, array $options): \Iterator
+    public function filter(\Generator $items, array $options): \Generator
     {
-        $out = $items;
-        foreach ($this->filters as $filter) {
-            $res = $this->handleFilter($filter, $items, $options);
-            if (null !== $res) {
-                $out = $res;
-                if (\iterator_count($out) < 1) {
-                    break;
+        $filters = \array_filter($this->filters, function (ChainedFilterInterface $filter) use ($options) {
+            return $filter->support($options);
+        });
+
+        foreach ($items as $key => $item) {
+            foreach ($filters as $filter) {
+                if ($filter->isExcluded($item, $options)) {
+                    continue 2;
                 }
             }
+
+            yield $key => $item;
         }
-
-        yield from $out;
-    }
-
-    /**
-     * @param SupportFilterInterface $filter
-     * @param iterable               $items
-     * @param array                  $options
-     *
-     * @return \Iterator|null
-     */
-    private function handleFilter(SupportFilterInterface $filter, iterable $items, array $options): ?\Iterator
-    {
-        if (!$filter->support($items, $options)) {
-            return null;
-        }
-
-        return $filter->filter($items, $options);
     }
 }

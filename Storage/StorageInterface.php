@@ -21,9 +21,9 @@ interface StorageInterface
      * @param string $type
      * @param array  $options
      *
-     * @return \Iterator    Iterator of stored data filtered by options. Ech key of element matches its stored key
+     * @return \Generator    Generator of stored data filtered by options. Ech key of element matches its stored key
      */
-    public function find(string $type, array $options): \Iterator;
+    public function find(string $type, array $options): \Generator;
 
     /**
      * @param string $key

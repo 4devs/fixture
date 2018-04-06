@@ -58,7 +58,7 @@ class Storage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function find(string $type, array $options): \Iterator
+    public function find(string $type, array $options): \Generator
     {
         $foundObjects = $this->storage->find($type, $options);
         foreach ($foundObjects as $key => $object) {
