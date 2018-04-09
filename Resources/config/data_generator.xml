@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <defaults public="false"/>
+
+        <service id="f_devs_fixture.data_generator.generator_manager" class="FDevs\Fixture\DataGenerator\GeneratorManager"/>
+        <service id="f_devs_fixture.data_generator.decorator_manager" class="FDevs\Fixture\DataGenerator\DecoratorManager"/>
+
+        <service id="f_devs_fixture.data_generator.combinator.combinator"
+                 class="FDevs\Fixture\DataGenerator\Combinator\Combinator">
+            <argument type="service" id="f_devs_fixture.data_generator.generator_manager"/>
+        </service>
+
+        <service id="f_devs_fixture.data_generator.combinator.combinable_factory"
+                 class="FDevs\Fixture\DataGenerator\Combinator\CombinableFactory"/>
+
+        <service id="f_devs_fixture.data_generator.combinator.expand_modifier_factory"
+                 class="FDevs\Fixture\DataGenerator\Combinator\ExpandModifierFactory">
+            <argument type="service" id="property_accessor"/>
+        </service>
+    </services>
+
+</container>

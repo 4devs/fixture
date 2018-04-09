@@ -24,9 +24,18 @@ class ChainFilterReduce implements FilterInterface
      */
     public function filter(\Generator $items, array $options): \Generator
     {
-        $filters = \array_filter($this->filters, function (ChainedFilterInterface $filter) use ($options) {
-            return $filter->support($options);
-        });
+        $filters = [];
+        foreach ($this->filters as $filter) {
+            if ($filter->support($options)) {
+                $filters[] = $filter;
+            }
+        }
+
+        if (empty($filters)) {
+            yield from $items;
+
+            return;
+        }
 
         foreach ($items as $key => $item) {
             foreach ($filters as $filter) {

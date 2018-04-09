@@ -7,7 +7,7 @@ interface GeneratorInterface
     /**
      * @param array $options
      *
-     * @return \Iterator Iterator of array
+     * @return \Generator Generator of data
      */
-    public function generate(array $options): \Iterator;
+    public function generate(array $options): \Generator;
 }
