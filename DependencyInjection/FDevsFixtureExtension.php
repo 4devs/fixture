@@ -27,6 +27,7 @@ class FDevsFixtureExtension extends Extension
 
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('command.xml');
+        $loader->load('data_generator.xml');
         $loader->load('service.xml');
         $loader->load('adapter/doctrine.xml');
 

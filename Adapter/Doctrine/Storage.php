@@ -4,9 +4,12 @@ namespace FDevs\Fixture\Adapter\Doctrine;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\ORMException;
+use FDevs\Fixture\Storage\FilterStorage\FilterInterface;
+use FDevs\Fixture\Storage\FilterStorage\Storage as FilterStorage;
 use FDevs\Fixture\Storage\StorageInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
-class Storage implements StorageInterface
+class Storage extends FilterStorage
 {
     /**
      * @var StorageInterface
@@ -29,9 +32,14 @@ class Storage implements StorageInterface
      * @param StorageInterface       $storage
      * @param EntityManagerInterface $manager
      */
-    public function __construct(StorageInterface $storage, EntityManagerInterface $manager)
-    {
-        $this->storage = $storage;
+    public function __construct(
+        EntityManagerInterface $manager,
+        CacheItemPoolInterface $cachePool,
+        FilterInterface $filter = null,
+        string $keyPrefix = '',
+        int $ttl = null
+    ) {
+        parent::__construct($cachePool, $filter, $keyPrefix, $ttl);
         $this->manager = $manager;
     }
 
@@ -40,14 +48,14 @@ class Storage implements StorageInterface
      */
     public function store($object, string $type): string
     {
-        $key = $this->storage->store($object, $type);
+        $key = parent::store($object, $type);
 
         if ($this->hasIdentifier($object)) {
             $identities = $this->getIdentifier($object);
 
             $className = \get_class($object);
             $type = \md5($className . ':identities');
-            $identitiesKey = $this->storage->store($identities, $type);
+            $identitiesKey = parent::store($identities, $type);
 
             $this->identitiesKeys[$key] = $identitiesKey;
         }
@@ -58,31 +66,12 @@ class Storage implements StorageInterface
     /**
      * @inheritDoc
      */
-    public function find(string $type, array $options): \Generator
-    {
-        $foundObjects = $this->storage->find($type, $options);
-        foreach ($foundObjects as $key => $object) {
-            yield $key => $this->prepareStoredObject($key, $object);
-        }
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function get(string $key)
     {
-        $object = $this->storage->get($key);
+        $object = parent::get($key);
         $object = $this->prepareStoredObject($key, $object);
 
         return $object;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function has(string $key): bool
-    {
-        return $this->storage->has($key);
     }
 
     /**
@@ -126,9 +115,9 @@ class Storage implements StorageInterface
     private function prepareStoredObject(string $key, $object)
     {
         $identitiesKey = $this->identitiesKeys[$key];
-        if (!$this->manager->contains($object) && $this->storage->has($identitiesKey)) {
+        if (!$this->manager->contains($object) && $this->has($identitiesKey)) {
             $meta = $this->manager->getClassMetadata(\get_class($object));
-            $identities = $this->storage->get($identitiesKey);
+            $identities = parent::get($identitiesKey);
             $reference = $this->manager->getReference(
                 $meta->name,
                 $identities
