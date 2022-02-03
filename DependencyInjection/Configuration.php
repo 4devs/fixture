@@ -17,8 +17,8 @@ class Configuration implements ConfigurationInterface
      */
     public function getConfigTreeBuilder()
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('f_devs_fixture');
+        $treeBuilder = new TreeBuilder('f_devs_fixture');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->append($this->createLoadCommandNode())
@@ -33,9 +33,10 @@ class Configuration implements ConfigurationInterface
      */
     private function createLoadCommandNode(): NodeDefinition
     {
-        $treeBuilder = new TreeBuilder();
-        $node = $treeBuilder->root('load_command');
-        $node
+        $treeBuilder = new TreeBuilder('load_command');
+        $rootNode = $treeBuilder->getRootNode();
+
+        $rootNode
             ->children()
                 ->scalarNode('context_handler')
                     ->info('Service id of ContextHandlerInterface. ' .
@@ -45,7 +46,7 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
 
-        return $node;
+        return $rootNode;
     }
 
     /**
@@ -53,9 +54,10 @@ class Configuration implements ConfigurationInterface
      */
     private function createAdapterDoctrine(): NodeDefinition
     {
-        $treeBuilder = new TreeBuilder();
-        $node = $treeBuilder->root('adapter_doctrine');
-        $node
+        $treeBuilder = new TreeBuilder('adapter_doctrine');
+        $rootNode = $treeBuilder->getRootNode();
+
+        $rootNode
             ->addDefaultsIfNotSet()
             ->children()
                 ->arrayNode('fixtures')
@@ -145,6 +147,6 @@ class Configuration implements ConfigurationInterface
             ->end()
         ;
 
-        return $node;
+        return $rootNode;
     }
 }
